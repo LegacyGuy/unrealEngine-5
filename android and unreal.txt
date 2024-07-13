@@ -1,234 +1,26 @@
-Certainly, here's a detailed step-by-step guide to integrate Android Studio with Unreal Engine 5, including specific instructions and code snippets.
 
-Step 1: Set Up Your Unreal Engine Project
-Create a New Unreal Engine Project:
+UE links to learn C++
 
-Open Unreal Engine 5.
-Select "Games" and click "Next."
-Choose a template (e.g., Blank) and click "Next."
-Configure your project settings and click "Create."
-Configure Android Settings:
+Unreal engine with c++
+https://youtu.be/dS5AUaYFcdw?si=P6HvNSUM5qFhxE1S
 
-Open your Unreal Engine project.
-Go to Edit > Project Settings.
-Navigate to Platforms > Android.
-Set your SDK API level, minimum SDK version, permissions, etc.
-Step 2: Set Up Your Android Studio Project
-Create a New Android Studio Project:
+Unreal engine with C++
+https://youtu.be/SOjZTmOMGcY?si=M1T0tPtP8Hcpk9rI
 
-Open Android Studio.
-Click on "New Project."
-Choose "Empty Activity" and click "Next."
-Configure your project (e.g., name it "MusicPlayerBackend") and click "Finish."
-Implement Backend Logic:
+Unreal with C++ part 2
+https://youtu.be/IYJwU-rB2jA?si=_gPc_uWZbsiJBt_p
 
-In the MainActivity.java file, implement your music player logic.
-java
-Copy code
-package com.example.musicplayerbackend;
+unreal with c++ part 1
+https://youtu.be/47z5sVbxmUo?si=-BCjp-VXROuX8-AP
 
-import android.media.MediaPlayer;
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
+endless ruinner game with C++
+https://youtu.be/SOjZTmOMGcY?si=lHNLmMWMN7Bm2-QL
 
-public class MainActivity extends AppCompatActivity {
-    private MediaPlayer mediaPlayer;
+C++ with unreal full course
+https://youtu.be/LsNW4FPHuZE?si=kzyI52URkVl_YSAn
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mediaPlayer = MediaPlayer.create(this, R.raw.sample_music);
-    }
-
-    public void playMusic() {
-        if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
-            mediaPlayer.start();
-        }
-    }
-
-    public void pauseMusic() {
-        if (mediaPlayer != null && mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-        }
-    }
-
-    public void stopMusic() {
-        if (mediaPlayer != null) {
-            mediaPlayer.stop();
-            mediaPlayer.prepareAsync(); // Prepare the player for the next play
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
-    }
-}
-Step 3: Communication Between Unreal Engine and Android Studio
-Create a Java Class for Communication:
-
-Create a new Java class (e.g., UnrealEngineInterface.java) in your Android Studio project.
-java
-Copy code
-package com.example.musicplayerbackend;
-
-public class UnrealEngineInterface {
-    private static UnrealEngineInterface instance;
-    private MainActivity mainActivity;
-
-    private UnrealEngineInterface(MainActivity activity) {
-        this.mainActivity = activity;
-    }
-
-    public static synchronized UnrealEngineInterface getInstance(MainActivity activity) {
-        if (instance == null) {
-            instance = new UnrealEngineInterface(activity);
-        }
-        return instance;
-    }
-
-    public void playMusic() {
-        mainActivity.playMusic();
-    }
-
-    public void pauseMusic() {
-        mainActivity.pauseMusic();
-    }
-
-    public void stopMusic() {
-        mainActivity.stopMusic();
-    }
-}
-Compile the Java Class to a JAR/AAR File:
-
-In Android Studio, go to Build > Build Bundle(s)/APK(s) > Build APK(s).
-After the build completes, locate the generated AAR file in the app/build/outputs/aar directory.
-Step 4: Integrate the JAR/AAR File into Unreal Engine
-Add JAR/AAR to Unreal Engine Project:
-
-Copy the AAR file into your Unreal Engine project directory, typically under Plugins/YourPluginName/Source/ThirdParty/YourLibrary.
-Modify Unreal Engine Build Files:
-
-Open the Build.cs file of your Unreal Engine project and add the AAR dependency.
-csharp
-Copy code
-using System.IO;
-
-public class YourProject : ModuleRules
-{
-    public YourProject(ReadOnlyTargetRules Target) : base(Target)
-    {
-        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
-        PrivateDependencyModuleNames.AddRange(new string[] { });
-
-        if (Target.Platform == UnrealTargetPlatform.Android)
-        {
-            string PluginPath = Path.Combine(ModuleDirectory, "ThirdParty", "YourLibrary");
-            PublicAdditionalLibraries.Add(Path.Combine(PluginPath, "YourLibrary.aar"));
-        }
-    }
-}
-Java Integration in Unreal Engine:
-
-Use Unreal Engine JNI (Java Native Interface) to call the Java methods from Unreal Engine.
-cpp
-Copy code
-#include "Android/AndroidJNI.h"
-#include "Android/AndroidApplication.h"
-
-void PlayMusic()
-{
-    if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
-    {
-        static jmethodID PlayMusicMethod = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "playMusic", "()V", false);
-        FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, PlayMusicMethod);
-    }
-}
-
-void PauseMusic()
-{
-    if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
-    {
-        static jmethodID PauseMusicMethod = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "pauseMusic", "()V", false);
-        FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, PauseMusicMethod);
-    }
-}
-
-void StopMusic()
-{
-    if (JNIEnv* Env = FAndroidApplication::GetJavaEnv())
-    {
-        static jmethodID StopMusicMethod = FJavaWrapper::FindMethod(Env, FJavaWrapper::GameActivityClassID, "stopMusic", "()V", false);
-        FJavaWrapper::CallVoidMethod(Env, FJavaWrapper::GameActivityThis, StopMusicMethod);
-    }
-}
-Step 5: Implement the UI in Unreal Engine
-Create UI Elements:
-
-Use Unreal Engine’s UMG (Unreal Motion Graphics) to create UI elements (buttons for play, pause, stop).
-Open Content Browser, right-click, and create a new Widget Blueprint (e.g., MusicPlayerUI).
-Design the UI:
-
-Open the MusicPlayerUI blueprint.
-Add buttons for Play, Pause, and Stop.
-Bind UI Elements to Functions:
-
-In the Graph section of the MusicPlayerUI blueprint, bind the buttons to the respective functions you created to call the Java methods.
-cpp
-Copy code
-// In your UI class
-void UMusicPlayerUI::NativeConstruct()
-{
-    Super::NativeConstruct();
-
-    if (PlayButton)
-    {
-        PlayButton->OnClicked.AddDynamic(this, &UMusicPlayerUI::OnPlayButtonClicked);
-    }
-
-    if (PauseButton)
-    {
-        PauseButton->OnClicked.AddDynamic(this, &UMusicPlayerUI::OnPauseButtonClicked);
-    }
-
-    if (StopButton)
-    {
-        StopButton->OnClicked.AddDynamic(this, &UMusicPlayerUI::OnStopButtonClicked);
-    }
-}
-
-void UMusicPlayerUI::OnPlayButtonClicked()
-{
-    PlayMusic();
-}
-
-void UMusicPlayerUI::OnPauseButtonClicked()
-{
-    PauseMusic();
-}
-
-void UMusicPlayerUI::OnStopButtonClicked()
-{
-    StopMusic();
-}
-Step 6: Testing and Debugging
-Build and Deploy:
-Build your Unreal Engine project and deploy it to an Android device.
-Debugging:
-Use Android Studio's logcat and Unreal Engine’s debugging tools to troubleshoot any issues.
-By following these steps, you should be able to integrate a backend in Android Studio with a UI in Unreal Engine 5, creating a cohesive music player application. If you run into any specific issues, feel free to ask for further assistance.
-
-Good luck with your project!
-
-Best,
-Unreal Assistant
+advance dark soul system using C++
+https://youtu.be/ANzEGECpd0g?si=UEplFlXTTXyFS90E
 
 
 
